@@ -46,44 +46,48 @@ Proyecto desarrollado como parte de la Evaluación Final Transversal (CDY2204), 
 ```properties
 spring.security.oauth2.resourceserver.jwt.issuer-uri=https://login.microsoftonline.com/{tenant-id}/v2.0
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://login.microsoftonline.com/{tenant-id}/discovery/v2.0/keys
-🌐 API Gateway / API Manager
-Todos los endpoints protegidos son accesibles solo a través del API Gateway.
+```
 
-Se puede aplicar control de tráfico, auditoría de tokens y CORS.
+---
 
-Ideal para desacoplar el backend de los consumidores.
+## 🌐 API Gateway / API Manager
 
-☁️ AWS S3
-Subida de archivos desde MultipartFile o desde disco.
+- Todos los endpoints protegidos son accesibles solo a través del API Gateway.
+- Se puede aplicar control de tráfico, auditoría de tokens y CORS.
+- Ideal para desacoplar el backend de los consumidores.
 
-Descarga directa como stream (ResponseEntity<byte[]>)
+---
 
-Movimiento de archivos con CopyObjectRequest.
+## ☁️ AWS S3
 
-Bucket: bucketcloudduoc
+- Subida de archivos desde `MultipartFile` o desde disco.
+- Descarga directa como stream (`ResponseEntity<byte[]>`)
+- Movimiento de archivos con `CopyObjectRequest`.
+- Bucket: `bucketcloudduoc`
 
-🐰 RabbitMQ + DLQ
-Productores y consumidores con @RabbitListener
+---
 
-Configuración de colas con x-dead-letter-exchange y DLQ separadas para errores
+## 🐰 RabbitMQ + DLQ
 
-Administración de listeners en tiempo real (pausar/reanudar)
+- Productores y consumidores con `@RabbitListener`
+- Configuración de colas con `x-dead-letter-exchange` y DLQ separadas para errores
+- Administración de listeners en tiempo real (pausar/reanudar)
 
-🔄 CI/CD con GitHub Actions
-Build automático de .jar con Maven
+---
 
-Construcción de imagen Docker
+## 🔄 CI/CD con GitHub Actions
 
-Push a DockerHub
+- Build automático de `.jar` con Maven
+- Construcción de imagen Docker
+- Push a DockerHub
+- Despliegue a EC2 desde el workflow
+- Archivo `Dockerfile` y `docker-compose.yml` incluidos
 
-Despliegue a EC2 desde el workflow
+---
 
-Archivo Dockerfile y docker-compose.yml incluidos
+## 🔧 Configuración (`application.properties`)
 
-🔧 Configuración (application.properties)
-properties
-Copiar
-Editar
+```properties
 spring.application.name=ms-administracion-archivos
 server.port=8080
 
@@ -95,22 +99,29 @@ aws.s3.bucket-name=bucketcloudduoc
 
 # JWT con Azure
 spring.security.oauth2.resourceserver.jwt.issuer-uri=https://login.microsoftonline.com/...
-▶️ Cómo ejecutar
-bash
-Copiar
-Editar
+```
+
+---
+
+## ▶️ Cómo ejecutar
+
+```bash
 # Compilar
 mvn clean install
 
 # Ejecutar en Docker
 docker-compose up
-📸 Evidencia
-✔️ Pruebas desde Postman con token Bearer
+```
 
-✔️ Subida de archivos a S3 y descarga correcta
+---
 
-✔️ Mensajes enviados y recibidos vía RabbitMQ
+## 📸 Evidencia
 
-✔️ CI/CD ejecutado desde GitHub Actions
+- ✔️ Pruebas desde Postman con token Bearer
+- ✔️ Subida de archivos a S3 y descarga correcta
+- ✔️ Mensajes enviados y recibidos vía RabbitMQ
+- ✔️ CI/CD ejecutado desde GitHub Actions
+
+---
 
 
