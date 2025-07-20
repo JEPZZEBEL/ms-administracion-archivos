@@ -1,0 +1,41 @@
+version: '3'
+services:
+  rabbitmq1:
+    image: rabbitmq:3-management
+    hostname: rabbitmq1
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: 'mysecretcookie'
+    networks:
+      - rabbitmq
+
+  rabbitmq2:
+    image: rabbitmq:3-management
+    hostname: rabbitmq2
+    ports:
+      - "15673:15672"
+      - "5673:5672"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: 'mysecretcookie'
+    networks:
+      - rabbitmq
+    depends_on:
+      - rabbitmq1
+    volumes:
+      - ./rabbitmq-entrypoint.sh:/rabbitmq-entrypoint.sh
+    entrypoint: ["bash", "/rabbitmq-entrypoint.sh"]
+  oracle-xe:
+    image: gvenzl/oracle-xe
+    container_name: oracle-local
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: mysecurepassword
+      APP_USER: myuser
+      APP_USER_PASSWORD: myuserpassword
+
+networks:
+  rabbitmq:
+    driver: bridge
