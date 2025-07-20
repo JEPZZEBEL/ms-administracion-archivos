@@ -1,165 +1,116 @@
+# Sistema de Gestión de Facturación (Boletas) - Proyecto Final
 
-# ms-administracion-archivos
-
-Microservicio Spring Boot para la administración de archivos en **Amazon S3**. Permite listar, descargar, subir, mover y eliminar archivos en buckets de S3 de forma sencilla a través de una API REST.
-
----
-
-## Características
-
-- **Listar archivos** de un bucket S3.
-- **Descargar archivos** individuales.
-- **Subir archivos** (soporte para multipart).
-- **Mover archivos** dentro de un bucket.
-- **Eliminar archivos**.
-- **Arquitectura limpia** (DTO para salida).
+Proyecto desarrollado como parte de la Evaluación Final Transversal (CDY2204), que consiste en un sistema de facturación basado en microservicios, con integración de servicios en la nube, mensajería, autenticación y despliegue continuo.
 
 ---
 
-## Tecnologías
+## 🧩 Tecnologías utilizadas
 
-- Java 21
-- Spring Boot 3.3.12
-- Spring Web
-- Spring Cloud AWS (S3) 3.3.1
-- Lombok
-
----
-
-## Instalación y configuración
-
-### 1. Clonar el repositorio
-
-```sh
-git clone https://github.com/<tu-usuario>/ms-administracion-archivos.git
-cd ms-administracion-archivos
-```
-
-### 2. Configurar acceso AWS
-
-Agrega tus credenciales y región en `application.yml` o como variables de entorno:
-
-```yaml
-spring:
-  cloud:
-    aws:
-      region:
-        static: us-east-1
-      credentials:
-        access-key: TU_ACCESS_KEY
-        secret-key: TU_SECRET_KEY
-        session-token: TU_SESSION_TOKEN
-```
-
-### 3. Compilar y ejecutar
-
-```sh
-./mvnw spring-boot:run
-```
+- ☕ Java 17 + Spring Boot 3
+- 🔐 Azure Entra ID (OAuth2 / JWT)
+- 🌐 API Manager / API Gateway para exposición segura
+- 🐰 RabbitMQ (con DLQ configurado)
+- ☁️ AWS S3 (almacenamiento de archivos)
+- 🐳 Docker + Docker Compose
+- 💾 Oracle DB local (con Spring Data JPA)
+- 🔄 GitHub Actions (CI/CD automático)
 
 ---
 
-## Endpoints principales
+## ⚙️ Funcionalidades principales
 
-### Listar objetos en un bucket
+### 📦 Microservicios REST
 
-```
-GET /s3/{bucket}/objects
-```
-**Respuesta:** Lista de archivos (`S3ObjectDto`)
+- **BoletaController**  
+  CRUD de boletas con persistencia en Oracle.
 
----
+- **MensajeController**  
+  Envío y recepción de mensajes de texto, usuarios y productos vía RabbitMQ.
 
-### Descargar archivo como stream
+- **RabbitMQAdminController**  
+  Creación dinámica de colas, exchanges y bindings.
 
-```
-GET /s3/{bucket}/object/stream/{key}
-```
-**Respuesta:** Archivo (binario, header para descarga directa)
+- **AwsS3Controller**  
+  Subida, descarga, eliminación y movimiento de archivos dentro del bucket S3.
 
 ---
 
-### Descargar archivo como byte[]
+## 🔐 Seguridad: Azure Entra ID (OAuth2)
 
-```
-GET /s3/{bucket}/object/{key}
-```
-**Respuesta:** Archivo (binario, header para descarga directa)
+- Autenticación basada en tokens JWT, verificados desde Azure.
+- Integración con `spring.security.oauth2.resourceserver` para proteger los endpoints.
+- Uso de `issuer-uri` y `jwk-set-uri` directamente desde Azure.
 
----
+### Fragmento de configuración:
 
-### Subir archivo (Multipart)
+```properties
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://login.microsoftonline.com/{tenant-id}/v2.0
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://login.microsoftonline.com/{tenant-id}/discovery/v2.0/keys
+🌐 API Gateway / API Manager
+Todos los endpoints protegidos son accesibles solo a través del API Gateway.
 
-```
-POST /s3/{bucket}/object/{key}
-Content-Type: multipart/form-data
-Parámetro: file (archivo)
-```
-**Ejemplo con Postman:**
-- Tipo: `POST`
-- URL: `http://localhost:8080/s3/mi-bucket/object/archivo.txt`
-- Form-data: clave = `file`, valor = (selecciona archivo)
+Se puede aplicar control de tráfico, auditoría de tokens y CORS.
 
----
+Ideal para desacoplar el backend de los consumidores.
 
-### Mover archivo dentro del bucket
+☁️ AWS S3
+Subida de archivos desde MultipartFile o desde disco.
 
-```
-POST /s3/{bucket}/move?sourceKey=origen.txt&destKey=destino.txt
-```
-**Body:** vacío
+Descarga directa como stream (ResponseEntity<byte[]>)
 
----
+Movimiento de archivos con CopyObjectRequest.
 
-### Eliminar archivo
+Bucket: bucketcloudduoc
 
-```
-DELETE /s3/{bucket}/object/{key}
-```
----
+🐰 RabbitMQ + DLQ
+Productores y consumidores con @RabbitListener
 
-## Estructura de proyecto
+Configuración de colas con x-dead-letter-exchange y DLQ separadas para errores
 
-- `controller/` - Controladores REST
-- `service/` - Lógica de negocio y acceso a S3
-- `dto/` - Clases DTO para respuesta
+Administración de listeners en tiempo real (pausar/reanudar)
 
----
+🔄 CI/CD con GitHub Actions
+Build automático de .jar con Maven
 
-## Ejemplo de uso con `curl`
+Construcción de imagen Docker
 
-**Subir un archivo:**
-```sh
-curl -X POST "http://localhost:8080/s3/mi-bucket/object/archivo.txt"   -F "file=@/ruta/al/archivo.txt"
-```
+Push a DockerHub
 
-**Listar archivos:**
-```sh
-curl "http://localhost:8080/s3/mi-bucket/objects"
-```
+Despliegue a EC2 desde el workflow
 
-**Descargar archivo:**
-```sh
-curl -O "http://localhost:8080/s3/mi-bucket/object/archivo.txt"
-```
+Archivo Dockerfile y docker-compose.yml incluidos
 
----
+🔧 Configuración (application.properties)
+properties
+Copiar
+Editar
+spring.application.name=ms-administracion-archivos
+server.port=8080
 
-## Dependencias principales (`pom.xml`)
+# AWS S3
+spring.cloud.aws.region.static=us-east-1
+spring.cloud.aws.credentials.access-key=...
+spring.cloud.aws.credentials.secret-key=...
+aws.s3.bucket-name=bucketcloudduoc
 
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-<dependency>
-    <groupId>io.awspring.cloud</groupId>
-    <artifactId>spring-cloud-aws-starter-s3</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <optional>true</optional>
-</dependency>
-```
-*(Incluye `spring-cloud-aws-dependencies:3.3.1` en `<dependencyManagement>`)*
+# JWT con Azure
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://login.microsoftonline.com/...
+▶️ Cómo ejecutar
+bash
+Copiar
+Editar
+# Compilar
+mvn clean install
+
+# Ejecutar en Docker
+docker-compose up
+📸 Evidencia
+✔️ Pruebas desde Postman con token Bearer
+
+✔️ Subida de archivos a S3 y descarga correcta
+
+✔️ Mensajes enviados y recibidos vía RabbitMQ
+
+✔️ CI/CD ejecutado desde GitHub Actions
+
+
